@@ -29,7 +29,7 @@ public class NetworkAdapter : MonoBehaviour
     }
 
     [ProButton]
-    public void NodeInterfaceChangeIP()
+    public void DebugNodeInterfaceChangeIP()
     {
         SetIPAddress(ipAddressString);
     }
@@ -40,6 +40,12 @@ public class NetworkAdapter : MonoBehaviour
         ipAddress = IPAddress;
         Debug.Log(ipAddress.ToString());
         UpdateUI(IPAddress);
+    }
+
+    public void SetSubnetMask(string _subnetMask)
+    {
+        subnetMask = _subnetMask;
+        Debug.Log(subnetMask);
     }
 
     public void UpdateUI(string IPAddress)
@@ -81,6 +87,7 @@ public class NetworkAdapter : MonoBehaviour
     public void SendPacket(Packet _packet, int physicalInterfaceNumber)
     {
         GetComponents<PhysicalInterface>()[physicalInterfaceNumber].SendFrame(_packet);
+        Debug.Log("Пакет отправлен по порту " + physicalInterfaceNumber);
     }
 
     public void SendPacketAllPorts(Packet _packet)

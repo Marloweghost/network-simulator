@@ -51,9 +51,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MACAddress: 
   ipAddressString: 192.168.0.1
-  TargetIpAddress: 192.168.0.2
   subnetMask: 255.255.255.0
   textHandler: {fileID: 3262228148078001773}
+  TargetIpAddress: 192.168.0.2
   ipAddress: 
 --- !u!114 &5843770629358665600
 MonoBehaviour:
@@ -394,7 +394,7 @@ GameObject:
   - component: {fileID: 1061515110576131801}
   - component: {fileID: 8005191324329689432}
   - component: {fileID: 3262228148078001773}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Node
   m_TagString: Node
   m_Icon: {fileID: 0}

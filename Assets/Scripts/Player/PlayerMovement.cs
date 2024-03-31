@@ -37,7 +37,6 @@ public class PlayerMovement : MonoBehaviour
         ReadInput();
         LimitSpeed();
 
-
         if (grounded)
         {
             rb.drag = groundDrag;

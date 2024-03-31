@@ -21,15 +21,15 @@ public class ARPTable : MonoBehaviour
 
     public void AddEntry(string ipAddress, string macAddress, int portNumber, float timeStamp)
     {
-
         ARPEntry entry = new ARPEntry(ipAddress, macAddress, portNumber, timeStamp);
+        // Debug.Log(entry.TimeStamp);
         if (!_arpTable.ContainsKey(ipAddress))
         {
             _arpTable.Add(ipAddress, entry);
         }
         else
         {
-            Debug.LogWarning("IP address already exists in ARP table.");
+            Debug.LogWarning("IP address already exists in ARP table");
         }
     }
 
@@ -41,7 +41,7 @@ public class ARPTable : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("IP address not found in ARP table.");
+            Debug.LogWarning("IP address not found in ARP table");
         }
     }
 
@@ -53,7 +53,7 @@ public class ARPTable : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("IP address not found in ARP table.");
+            Debug.LogWarning("IP address not found in ARP table");
             return null;
         }
     }
@@ -68,6 +68,7 @@ public class ARPTable : MonoBehaviour
 
             foreach (KeyValuePair<string, ARPEntry> entry in _arpTable)
             {
+                // Debug.Log(entry.Value.TimeStamp);
                 if (IsEntryExpired(entry.Value) == true)
                 {
                     expiredKeys.Add(entry.Key);
@@ -84,6 +85,7 @@ public class ARPTable : MonoBehaviour
     private bool IsEntryExpired(ARPEntry entry)
     {
         float timeSinceEntryUpdate = Time.time - entry.TimeStamp;
+        //Debug.Log(timeSinceEntryUpdate);
         return timeSinceEntryUpdate > entryTTL;
     }
 }

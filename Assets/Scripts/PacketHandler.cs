@@ -106,18 +106,22 @@ public class PacketHandler : MonoBehaviour
             int packetsCount = packetQueue.Count;
             for (int i = 0; i < packetsCount; i++)
             {
-                PacketWithTimestamp packet = packetQueue.Dequeue();
-                ARPEntry currentEntry = arpTable.GetEntry(packet.packet.TargetIP);
+                if (packetQueue.TryDequeue(out PacketWithTimestamp packet) == true)
+                {
+                    ARPEntry currentEntry = arpTable.GetEntry(packet.packet.TargetIP);
 
-                if (currentEntry.TimeStamp <= packet.timestamp) 
-                {
-                    // Denied
-                    packetQueue.Enqueue(packet);
-                }
-                else
-                {
-                    // Accepted
-                    networkAdapterRef.SendPacket(packet.packet, currentEntry.PortNumber);
+                    if (currentEntry == null) // || currentEntry.TimeStamp <= packet.timestamp)
+                    {
+                        // Denied
+                        Debug.Log("Packet from " + packet.packet.SenderIP + " is denied...");
+                        packetQueue.Enqueue(packet);
+                    }
+                    else
+                    {
+                        Debug.Log("Packet from " + packet.packet.SenderIP + " accepted!");
+                        // Accepted
+                        networkAdapterRef.SendPacket(packet.packet, currentEntry.PortNumber);
+                    }
                 }
             }
         }
