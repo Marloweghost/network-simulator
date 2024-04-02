@@ -27,9 +27,19 @@ public class WireRenderer : MonoBehaviour
         lineRenderer.positionCount = 2;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         lineRenderer.SetPosition(0, startObject.position);
         lineRenderer.SetPosition(1, endObject.position);
+    }
+
+    public void InitiateRenderLine()
+    {
+        lineRenderer.enabled = true;
+    }
+
+    public void StopRenderLine()
+    {
+        lineRenderer.enabled = false;
     }
 }

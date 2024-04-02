@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class WireStateHandler : MonoBehaviour
 {
-    private WireRenderer wireRenderer;
     private Rigidbody rb;
-    [SerializeField] private Transform visual;
+    private WireRenderer wireRenderer;
+
     public enum State
     {
         Free,
@@ -17,27 +17,22 @@ public class WireStateHandler : MonoBehaviour
 
     private void Start()
     {
-        rb = GetComponentInChildren<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         wireRenderer = GetComponent<WireRenderer>();
-
-        // TODO: Что делать, если только один провод подключен?
-        //if ()
-        //{
-        //    ChangeState(State.Connected);
-        //}
-        //else
-        //{
-        //    ChangeState(State.Free);
-        //}
     }
 
     private void OnStateChange()
     {
         switch (currentState)
         {
-            case State.Connected: 
+            case State.Connected:
+                rb.isKinematic = true;
+                transform.position = (wireRenderer.startObject.localToWorldMatrix.GetPosition() + wireRenderer.endObject.localToWorldMatrix.GetPosition()) / 2f;
+                wireRenderer.InitiateRenderLine();
                 break;
             case State.Free:
+                rb.isKinematic = false;
+                wireRenderer.StopRenderLine();
                 break;
             default:
                 break;

@@ -102,6 +102,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   interactionSubPanel: {fileID: 0}
+  pickupRange: 2
+  heldObject: {fileID: 0}
+  hand: {fileID: 0}
 --- !u!114 &2972280620033041660
 MonoBehaviour:
   m_ObjectHideFlags: 0

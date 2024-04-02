@@ -97,4 +97,23 @@ public class NetworkAdapter : MonoBehaviour
         for (int interfaceID = 0; interfaceID < interfaces.Length; interfaceID++)
             interfaces[interfaceID].SendFrame(_packet);
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns>Возвращает свободный интерфейс. Если все интерфейсы заняты - возвращает null</returns>
+    public PhysicalInterface GetFreePhysicalInterface()
+    {
+        PhysicalInterface[] interfaces = GetComponents<PhysicalInterface>();
+
+        for (int interfaceID = 0; interfaceID < interfaces.Length; interfaceID++)
+        {
+            if (interfaces[interfaceID].PhysicalPort == null)
+            {
+                return interfaces[interfaceID];
+            }
+        }
+
+        return null;
+    }
 }
