@@ -14,10 +14,16 @@ public class UINodeInterface : MonoBehaviour
     [SerializeField] private GameObject textCurrentMaskCarrier;
     [SerializeField] private GameObject textMaskInputFieldCarrier;
 
+    [SerializeField] private GameObject textPingInputFieldCarrier;
+
     private TMP_Text currentIPTMProText;
     private TMP_InputField currentIPInputField;
+
     private TMP_Text currentMaskTMProText;
     private TMP_InputField currentMaskInputField;
+
+    private TMP_InputField currentPingInputField;
+
     [HideInInspector] public PlayerInteraction playerRef;
     [HideInInspector] public NetworkAdapter networkAdapter;
 
@@ -49,6 +55,12 @@ public class UINodeInterface : MonoBehaviour
         currentMaskInputField.text = "";
 
         UIUpdateText();
+    }
+
+    public void OnSendEchoRequestButtonClicked()
+    {
+        currentPingInputField = textPingInputFieldCarrier.GetComponent<TMP_InputField>();
+        networkAdapter.GetPacketSenderInstance().InitiateICMPEchoRequest(networkAdapter, networkAdapter.ipAddressString, currentPingInputField.text);
     }
 
     public void OnCloseButtonClicked()

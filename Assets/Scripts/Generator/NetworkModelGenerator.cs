@@ -9,11 +9,14 @@ public class NetworkModelGenerator : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private GameObject nodePrefab;
+    [SerializeField] private GameObject switchPrefab;
+    [SerializeField] private GameObject routerPrefab;
     [SerializeField] private GameObject connectionCablePrefab;
     [SerializeField] private Transform spawnPosition;
 
     [Header("Parameters")]
     public int defaultNodeCount = 7;
+    public string networkSubnetMask = "255.255.255.0";
 
     private int nodeCount;
     
@@ -58,8 +61,8 @@ public class NetworkModelGenerator : MonoBehaviour
     private void SetNodeLevels(Graph _graph)
     {
 
-        ///
-        int groupsCount = 4;
+        //
+        int groupsCount = 3;
         if (_graph.vertexCount < levelNodesCountBounds[0,0] + levelNodesCountBounds[1,0] + levelNodesCountBounds[2,0] + levelNodesCountBounds[3,0])
         {
             groupsCount = 3;
@@ -133,7 +136,6 @@ public class NetworkModelGenerator : MonoBehaviour
 
         for (int groupIndex = 0; groupIndex < groupsCount; groupIndex++)
         {
-
             if (groupIndex + 1 == groupsCount)
             {
                 nodesInGroupCount += remainder;
@@ -204,15 +206,59 @@ public class NetworkModelGenerator : MonoBehaviour
         Vector3 levelPositionDelta = new Vector3(0, -2f, 0);
         Vector3 nodePositionDelta = new Vector3(0, 0, 1f);
 
+        GameObject[] spawnedNodes = new GameObject[_graph.vertexCount];
+
+        int levelsCount = _graph.GetUniqueLevelsCount();
+
         for (int nodeIndex = 0; nodeIndex < _graph.vertexCount; nodeIndex++)
         {
             int nodeLevel = _graph.GetLevel(nodeIndex);
-            GameObject spawnedNode = Instantiate(nodePrefab, new Vector3(startPosition.x + levelPositionDelta.x * nodeLevel + nodePositionDelta.x * nodeIndex * Mathf.Pow(-1f, nodeIndex),
+
+            GameObject spawnedNode = null;
+
+            if (nodeLevel == levelsCount - 1)
+            {
+                spawnedNode = Instantiate(nodePrefab, new Vector3(startPosition.x + levelPositionDelta.x * nodeLevel + nodePositionDelta.x * nodeIndex * Mathf.Pow(-1f, nodeIndex),
                 startPosition.y + levelPositionDelta.y * nodeLevel + nodePositionDelta.y * nodeIndex * Mathf.Pow(-1f, nodeIndex),
                 startPosition.z + levelPositionDelta.z * nodeLevel + nodePositionDelta.z * nodeIndex * Mathf.Pow(-1f, nodeIndex)),
                 Quaternion.identity);
+            }
+            else if (nodeLevel != 0)
+            {
+                spawnedNode = Instantiate(switchPrefab, new Vector3(startPosition.x + levelPositionDelta.x * nodeLevel + nodePositionDelta.x * nodeIndex * Mathf.Pow(-1f, nodeIndex),
+                startPosition.y + levelPositionDelta.y * nodeLevel + nodePositionDelta.y * nodeIndex * Mathf.Pow(-1f, nodeIndex),
+                startPosition.z + levelPositionDelta.z * nodeLevel + nodePositionDelta.z * nodeIndex * Mathf.Pow(-1f, nodeIndex)),
+                Quaternion.identity);
+            }
+            else
+            {
+                spawnedNode = Instantiate(routerPrefab, new Vector3(startPosition.x + levelPositionDelta.x * nodeLevel + nodePositionDelta.x * nodeIndex * Mathf.Pow(-1f, nodeIndex),
+                startPosition.y + levelPositionDelta.y * nodeLevel + nodePositionDelta.y * nodeIndex * Mathf.Pow(-1f, nodeIndex),
+                startPosition.z + levelPositionDelta.z * nodeLevel + nodePositionDelta.z * nodeIndex * Mathf.Pow(-1f, nodeIndex)),
+                Quaternion.identity);
+            }
 
-            spawnedNode.GetComponentInChildren<NetworkAdapter>().SetIPAddress(_graph.GetIPAddress(nodeIndex));
+            spawnedNodes[nodeIndex] = spawnedNode;
+
+            NetworkAdapter spawnedNodeNetworkAdapter = spawnedNode.GetComponentInChildren<NetworkAdapter>();
+            spawnedNodeNetworkAdapter.SetIPAddress(_graph.GetIPAddress(nodeIndex));
+            spawnedNodeNetworkAdapter.SetSubnetMask(_graph.GetSubnetMask(nodeIndex));
+        }
+
+        for (int _nodeIndex = 0; _nodeIndex < spawnedNodes.Length; _nodeIndex++)
+        {
+            int[] _childNodesIndexes = _graph.GetChildNodes(_nodeIndex);
+
+            foreach (int _childNodeIndex in _childNodesIndexes)
+            {
+                GameObject connectionInstance = Instantiate(connectionCablePrefab,
+                    (spawnedNodes[_nodeIndex].transform.position + spawnedNodes[_childNodeIndex].transform.position) / 2f,
+                    Quaternion.identity);
+                connectionInstance.GetComponent<WireStateHandler>().ChangeState(WireStateHandler.State.Connected);
+
+                spawnedNodes[_nodeIndex].GetComponentInChildren<NetworkAdapter>().GetFreePhysicalInterface().PhysicalPort = connectionInstance.transform.GetChild(0).gameObject;
+                spawnedNodes[_childNodeIndex].GetComponentInChildren<NetworkAdapter>().GetFreePhysicalInterface().PhysicalPort = connectionInstance.transform.GetChild(1).gameObject;
+            }
         }
     }
 
@@ -227,9 +273,10 @@ public class NetworkModelGenerator : MonoBehaviour
     // Рекурсивный вызов
     private void SetNodeProperties(int nodeIndex, Graph _graph)
     {
-        string newAddress = GenerateIPAddress("192.168.0.1", "255.255.255.0", _graph);
+        string newAddress = GenerateIPAddress("192.168.0.1", networkSubnetMask, _graph);
         _graph.AddIPAddress(nodeIndex, newAddress);
-        // nodeIndex не равно 9 при n = 10
+        _graph.AddSubnetMask(nodeIndex, networkSubnetMask);
+
         int[] childNodes = _graph.GetChildNodes(nodeIndex);
 
         for (int localNodeIndex = 0; localNodeIndex < childNodes.Length; localNodeIndex++)

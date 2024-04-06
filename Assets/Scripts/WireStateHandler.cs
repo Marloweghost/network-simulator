@@ -15,7 +15,7 @@ public class WireStateHandler : MonoBehaviour
 
     private State currentState;
 
-    private void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         wireRenderer = GetComponent<WireRenderer>();

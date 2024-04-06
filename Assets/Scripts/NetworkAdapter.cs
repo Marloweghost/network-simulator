@@ -1,5 +1,6 @@
 using com.cyborgAssets.inspectorButtonPro;
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class NetworkAdapter : MonoBehaviour
@@ -32,6 +33,11 @@ public class NetworkAdapter : MonoBehaviour
     public void DebugNodeInterfaceChangeIP()
     {
         SetIPAddress(ipAddressString);
+    }
+
+    public PacketSender GetPacketSenderInstance()
+    {
+        return packetSender;
     }
 
     public void SetIPAddress(string IPAddress)
@@ -72,20 +78,48 @@ public class NetworkAdapter : MonoBehaviour
 
         packetHandler.HandlePacket(_packetData, ipAddress, portNumber);
     }
+
     [ProButton]
     private void ARMSendDebugPacket()
     {
         debugPacket = new Packet(-1, "This is a debug message", ipAddress, TargetIpAddress, MACAddress);
         SendPacket(debugPacket, 0);
     }
+
     [ProButton]
     private void ARMSendDebugARPRequest()
     {
         packetSender.InitiateARPRequest(this, ipAddress, BroadcastAddressCalculator.CalculateBroadcastAddress(ipAddress, subnetMask));
     }
 
+    [ProButton]
+    private void ARMSendDebugEchoRequest()
+    {
+        debugPacket = new Packet(8, "This is a debug echo request!", ipAddress, TargetIpAddress, MACAddress);
+        SendPacket(debugPacket, 0);
+    }
+
     public void SendPacket(Packet _packet, int physicalInterfaceNumber)
     {
+        GetComponents<PhysicalInterface>()[physicalInterfaceNumber].SendFrame(_packet);
+        Debug.Log($"Пакет отправлен из {ipAddressString} по порту {physicalInterfaceNumber}");
+    }
+
+    public void SendPacket(Packet _packet)
+    {
+        int physicalInterfaceNumber;
+        ARPEntry entry = packetHandler.GetARPTableEntry(_packet.TargetIP);
+
+        if (entry != null)
+        {
+            physicalInterfaceNumber = entry.PortNumber;
+        }
+        else
+        {
+            packetHandler.HandlePacket(_packet, ipAddress, 0);
+            return;
+        }
+
         GetComponents<PhysicalInterface>()[physicalInterfaceNumber].SendFrame(_packet);
         Debug.Log("Пакет отправлен по порту " + physicalInterfaceNumber);
     }

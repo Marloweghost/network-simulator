@@ -7,6 +7,7 @@ public class Graph
 {
     private int[,] adjacencyMatrix;
     private string[] addressArray;
+    private string[] subnetMaskArray;
     public int vertexCount { get; private set; }
 
     public Graph(int vertices)
@@ -14,6 +15,7 @@ public class Graph
         vertexCount = vertices;
         adjacencyMatrix = new int[vertexCount, vertexCount];
         addressArray = new string[vertexCount];
+        subnetMaskArray = new string[vertexCount];
     }
 
     public void AddEdge(int i, int j)
@@ -31,6 +33,11 @@ public class Graph
     public void AddIPAddress(int nodeIndex, string IPAddress)
     {
         addressArray[nodeIndex] = IPAddress;
+    }
+
+    public void AddSubnetMask(int nodeIndex, string subnetMask)
+    {
+        subnetMaskArray[nodeIndex] = subnetMask;
     }
 
     public bool IsIPAddressTaken(string ipAddress)
@@ -79,6 +86,11 @@ public class Graph
     public string GetIPAddress(int nodeIndex)
     {
         return addressArray[nodeIndex];
+    }
+
+    public string GetSubnetMask(int nodeIndex)
+    {
+        return subnetMaskArray[nodeIndex];
     }
 
     public int GetLevel(int nodeNumber)
@@ -152,6 +164,4 @@ public class Graph
             Debug.Log($"Узел {nodeIndex}: {addressArray[nodeIndex]}");
         }
     }
-
-
 }

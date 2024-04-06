@@ -10,7 +10,7 @@ public class WireRenderer : MonoBehaviour
 
     private LineRenderer lineRenderer;
 
-    private void Start()
+    private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
         if (lineRenderer == null)

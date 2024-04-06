@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PacketHandler : MonoBehaviour
@@ -10,6 +11,7 @@ public class PacketHandler : MonoBehaviour
 
     private Queue<PacketWithTimestamp> packetQueue = new Queue<PacketWithTimestamp>();
     private float recheckInterval = 0.2f;
+    private float packetTTL = 5f;
 
     private void Start()
     {
@@ -20,16 +22,24 @@ public class PacketHandler : MonoBehaviour
         StartCoroutine(RecheckHeldPacketsCoroutine());
     }
 
+    public ARPEntry GetARPTableEntry(string ipAddress)
+    {
+        return arpTable.GetEntry(ipAddress);
+    }
+
     public void HandlePacket(Packet _packetData, string _currentIpAddress, int portNumber)
     {
         string currentBroadcastAddress = BroadcastAddressCalculator.CalculateBroadcastAddress(_currentIpAddress, networkAdapterRef.subnetMask);
 
-        arpTable.RemoveEntry(_packetData.SenderIP);
-        arpTable.AddEntry(_packetData.SenderIP, _packetData.MACAddress, portNumber, Time.time);
+        if (_packetData.SenderIP != _currentIpAddress)
+        {
+            arpTable.RemoveEntry(_packetData.SenderIP);
+            arpTable.AddEntry(_packetData.SenderIP, _packetData.MACAddress, portNumber, Time.time);
+        }
 
         if (CompareIPs(_packetData.TargetIP, _currentIpAddress) == true | CompareIPs(_packetData.TargetIP, currentBroadcastAddress) == true)
         {
-            Debug.Log("Packet is addressed to me!");
+            Debug.Log($"Packet type {_packetData.MessageType} is addressed to me!");
 
             switch (_packetData.MessageType)
             {
@@ -41,11 +51,13 @@ public class PacketHandler : MonoBehaviour
                 // ICMP Echo (Request)
                 case 8:
                     // Make packet with code 0 and send back
+                    packetSenderRef.InitiateICMPEchoReply(networkAdapterRef, _packetData, _currentIpAddress, portNumber);
                     break;
 
                 // ICMP Echo Reply
                 case 0:
                     // Output ping data
+                    Debug.Log($"Reply from {_packetData.SenderIP}: bytes=- time=-ms TTL=-");
                     break;
 
                 // ARP Request
@@ -92,7 +104,7 @@ public class PacketHandler : MonoBehaviour
             }
             else
             {
-                Debug.Log("Not mine packet blocked by ARM!");
+                Debug.Log($"Not mine packet blocked by ARM {_currentIpAddress}!");
             }
         }
     }
@@ -110,10 +122,16 @@ public class PacketHandler : MonoBehaviour
                 {
                     ARPEntry currentEntry = arpTable.GetEntry(packet.packet.TargetIP);
 
+                    if (Time.time - packet.timestamp > packetTTL) 
+                    {
+                        Debug.Log("Packet from " + packet.packet.SenderIP + " is expired inside " + networkAdapterRef.ipAddressString + "!");
+                        break;
+                    }
+
                     if (currentEntry == null) // || currentEntry.TimeStamp <= packet.timestamp)
                     {
                         // Denied
-                        Debug.Log("Packet from " + packet.packet.SenderIP + " is denied...");
+                        Debug.Log("Packet from " + packet.packet.SenderIP + " is denied by " + networkAdapterRef.ipAddressString + "");
                         packetQueue.Enqueue(packet);
                     }
                     else
