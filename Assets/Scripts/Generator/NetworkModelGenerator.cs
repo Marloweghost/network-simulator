@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 
 public class NetworkModelGenerator : MonoBehaviour
@@ -16,9 +17,11 @@ public class NetworkModelGenerator : MonoBehaviour
 
     [Header("Parameters")]
     public int defaultNodeCount = 7;
+    public string baseIPAddress = "192.168.0.1";
     public string networkSubnetMask = "255.255.255.0";
 
     private int nodeCount;
+    private string currentBaseIPAddress;
     
     [Range(0f, 1f)] public float complexity = 0.5f;
     [Range(1, 3)] public int skillLevel = 1;
@@ -216,6 +219,7 @@ public class NetworkModelGenerator : MonoBehaviour
 
             GameObject spawnedNode = null;
 
+            // Если уровня два, то маршрутизатор НЕ НУЖЕН
             if (nodeLevel == levelsCount - 1)
             {
                 spawnedNode = Instantiate(nodePrefab, new Vector3(startPosition.x + levelPositionDelta.x * nodeLevel + nodePositionDelta.x * nodeIndex * Mathf.Pow(-1f, nodeIndex),
@@ -236,6 +240,16 @@ public class NetworkModelGenerator : MonoBehaviour
                 startPosition.y + levelPositionDelta.y * nodeLevel + nodePositionDelta.y * nodeIndex * Mathf.Pow(-1f, nodeIndex),
                 startPosition.z + levelPositionDelta.z * nodeLevel + nodePositionDelta.z * nodeIndex * Mathf.Pow(-1f, nodeIndex)),
                 Quaternion.identity);
+
+                int[] nodesFromNextLevel = _graph.GetNodesFromLevel(nodeLevel + 1);
+
+                for (int internalNodeIndex = 0; internalNodeIndex < nodesFromNextLevel.Length; internalNodeIndex++)
+                {
+                    spawnedNode.GetComponentInChildren<RoutingTable>().AddStaticRoute(new Route(CalculateNetworkAddress(_graph.GetIPAddress(nodesFromNextLevel[internalNodeIndex]), _graph.GetSubnetMask(nodeIndex)), 
+                        _graph.GetSubnetMask(nodeIndex), 
+                        _graph.GetIPAddress(nodesFromNextLevel[internalNodeIndex]), 
+                        1));
+                }
             }
 
             spawnedNodes[nodeIndex] = spawnedNode;
@@ -243,6 +257,7 @@ public class NetworkModelGenerator : MonoBehaviour
             NetworkAdapter spawnedNodeNetworkAdapter = spawnedNode.GetComponentInChildren<NetworkAdapter>();
             spawnedNodeNetworkAdapter.SetIPAddress(_graph.GetIPAddress(nodeIndex));
             spawnedNodeNetworkAdapter.SetSubnetMask(_graph.GetSubnetMask(nodeIndex));
+            spawnedNodeNetworkAdapter.SetDefaultGateway(_graph.GetDefaultGateway(nodeIndex));
         }
 
         for (int _nodeIndex = 0; _nodeIndex < spawnedNodes.Length; _nodeIndex++)
@@ -264,6 +279,7 @@ public class NetworkModelGenerator : MonoBehaviour
 
     private void SetNodesProperties(Graph _graph)
     {
+        currentBaseIPAddress = baseIPAddress;
         SetNodeProperties(0, _graph);
 
         _graph.PrintAddresses();
@@ -273,9 +289,16 @@ public class NetworkModelGenerator : MonoBehaviour
     // Рекурсивный вызов
     private void SetNodeProperties(int nodeIndex, Graph _graph)
     {
-        string newAddress = GenerateIPAddress("192.168.0.1", networkSubnetMask, _graph);
+        if (_graph.GetLevel(nodeIndex) == 1 && _graph.GetUniqueLevelsCount() > 2)
+        {
+            currentBaseIPAddress = GetNextNetworkAddress(currentBaseIPAddress, networkSubnetMask);
+            Debug.Log("Base changed to " + currentBaseIPAddress);
+        }
+
+        string newAddress = GenerateIPAddress(currentBaseIPAddress, networkSubnetMask, _graph);
         _graph.AddIPAddress(nodeIndex, newAddress);
         _graph.AddSubnetMask(nodeIndex, networkSubnetMask);
+        _graph.AddDefaultGateway(nodeIndex, baseIPAddress);
 
         int[] childNodes = _graph.GetChildNodes(nodeIndex);
 
@@ -283,6 +306,28 @@ public class NetworkModelGenerator : MonoBehaviour
         {
             SetNodeProperties(childNodes[localNodeIndex], _graph);
         }
+    }
+
+    private string GetNextNetworkAddress(string networkAddress, string subnetMask)
+    {
+        byte[] ipBytes = networkAddress.Split('.').Select(byte.Parse).ToArray();
+        byte[] maskBytes = subnetMask.Split('.').Select(byte.Parse).ToArray();
+
+        // Convert IP address and subnet mask to integer
+        uint ip = BitConverter.ToUInt32(ipBytes.Reverse().ToArray(), 0);
+        uint mask = BitConverter.ToUInt32(maskBytes.Reverse().ToArray(), 0);
+
+        // Calculate broadcast address
+        uint broadcast = (ip | (~mask)) + 1;
+
+        // Increment the broadcast address by 1 to get the next network address
+        uint nextNetwork = broadcast;
+
+        // Convert next network address back to string
+        byte[] nextNetworkBytes = BitConverter.GetBytes(nextNetwork).Reverse().ToArray();
+        string nextNetworkAddress = string.Join(".", nextNetworkBytes.Select(b => b.ToString()));
+
+        return nextNetworkAddress;
     }
 
     private string GenerateIPAddress(string baseIPAddress, string subnetMask, Graph _graph)
@@ -321,4 +366,45 @@ public class NetworkModelGenerator : MonoBehaviour
         // Возвращение null, если не удалось найти доступный IP-адрес
         return null;
     }
+
+    public bool ValidateIP(string ipAddress)
+    {
+        if (String.IsNullOrWhiteSpace(ipAddress))
+        {
+            return false;
+        }
+
+        string[] splitValues = ipAddress.Split('.');
+        if (splitValues.Length != 4)
+        {
+            return false;
+        }
+
+        byte temp;
+        return splitValues.All(r => byte.TryParse(r, out temp));
+    }
+
+    public string CalculateNetworkAddress(string firstIpAddress, string subnetMask)
+    {
+        // Разбиваем IP-адрес и маску подсети на октеты
+        string[] ipOctets = firstIpAddress.Split('.');
+        string[] maskOctets = subnetMask.Split('.');
+
+        // Преобразуем октеты в целые числа
+        int[] ipNumbers = Array.ConvertAll(ipOctets, int.Parse);
+        int[] maskNumbers = Array.ConvertAll(maskOctets, int.Parse);
+
+        // Вычисляем адрес сети
+        int[] networkNumbers = new int[4];
+        for (int i = 0; i < 4; i++)
+        {
+            networkNumbers[i] = ipNumbers[i] & maskNumbers[i];
+        }
+
+        // Преобразуем адрес сети в строку
+        string networkAddress = string.Join(".", networkNumbers);
+
+        return networkAddress;
+    }
 }
+

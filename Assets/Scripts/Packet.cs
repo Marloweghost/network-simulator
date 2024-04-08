@@ -8,6 +8,7 @@ public struct Packet
     private string _senderIP;
     private string _targetIP;
     private string _macAddress;
+    private int _ttl;
 
     public string VerificationMessage
     {
@@ -45,6 +46,12 @@ public struct Packet
         set { _macAddress = value; }
     }
 
+    public int TTL
+    {
+        get { return _ttl; }
+        set { _ttl = value; }
+    }
+
     public Packet(int messageType, string verificationMessage, byte[] payload, string senderIP, string targetIP, string macAddress)
     {
         _messageType = messageType;
@@ -53,6 +60,7 @@ public struct Packet
         _senderIP = senderIP;
         _targetIP = targetIP;
         _macAddress = macAddress;
+        _ttl = 128;
     }
 
     public Packet(int messageType, string verificationMessage, string senderIP, string targetIP, string macAddress)
@@ -63,5 +71,6 @@ public struct Packet
         _senderIP = senderIP;
         _targetIP = targetIP;
         _macAddress = macAddress;
+        _ttl = 128;
     }
 }

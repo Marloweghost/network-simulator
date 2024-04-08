@@ -19,6 +19,8 @@ public class PlayerMovement : MonoBehaviour
 
     private float horizontalInput;
     private float verticalInput;
+    private int upInput;
+    private int downInput;
 
     Vector3 moveDirection;
 
@@ -32,30 +34,90 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
-
         ReadInput();
         LimitSpeed();
 
-        if (grounded)
+        if (Input.GetKeyDown(KeyCode.G)) 
         {
-            rb.drag = groundDrag;
+            if (currentMovementMode == MovementMode.Movement)
+            {
+                ChangeMovementMode(MovementMode.Ghost);
+            }
+            else
+            {
+                ChangeMovementMode(MovementMode.Movement);
+            }
+        }
+
+        if (currentMovementMode == MovementMode.Ghost)
+        {
+            
         }
         else
         {
-            rb.drag = 0f;
+            grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
+
+            // Исправить
+            if (grounded)
+            {
+                rb.drag = groundDrag;
+            }
+            else
+            {
+                rb.drag = groundDrag;
+            }
+        }
+    }
+
+    private enum MovementMode
+    {
+        Movement,
+        Ghost
+    }
+
+    private MovementMode currentMovementMode;
+
+    private void ChangeMovementMode(MovementMode newMode)
+    {
+        currentMovementMode = newMode;
+        OnMovementModeChange();
+    }
+
+    private void OnMovementModeChange()
+    {
+        switch (currentMovementMode)
+        {
+            case MovementMode.Movement:
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                break;
+            case MovementMode.Ghost:
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                break;
+            default:
+                break;
         }
     }
 
     private void FixedUpdate()
     {
-        MovePlayer();
+        if (currentMovementMode == MovementMode.Ghost)
+        {
+            MoveGhostPlayer();
+        }
+        else
+        {
+            MovePlayer();
+        }
     }
 
     private void ReadInput()
     {
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
+        upInput = Input.GetKey(KeyCode.Space) ? 1 : 0;
+        downInput = Input.GetKey(KeyCode.LeftControl) ? 1 : 0;
     }
 
     private void MovePlayer()
@@ -63,6 +125,13 @@ public class PlayerMovement : MonoBehaviour
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
         rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+    }
+
+    private void MoveGhostPlayer()
+    {
+        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput + orientation.up * upInput + orientation.up * -1 * downInput;
+
+        transform.Translate(moveDirection * moveSpeed * 0.01f);
     }
 
     private void LimitSpeed()

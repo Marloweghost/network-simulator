@@ -8,6 +8,7 @@ public class Graph
     private int[,] adjacencyMatrix;
     private string[] addressArray;
     private string[] subnetMaskArray;
+    private string[] defaultGatewayArray;
     public int vertexCount { get; private set; }
 
     public Graph(int vertices)
@@ -16,6 +17,7 @@ public class Graph
         adjacencyMatrix = new int[vertexCount, vertexCount];
         addressArray = new string[vertexCount];
         subnetMaskArray = new string[vertexCount];
+        defaultGatewayArray = new string[vertexCount];
     }
 
     public void AddEdge(int i, int j)
@@ -38,6 +40,11 @@ public class Graph
     public void AddSubnetMask(int nodeIndex, string subnetMask)
     {
         subnetMaskArray[nodeIndex] = subnetMask;
+    }
+
+    public void AddDefaultGateway(int nodeIndex, string defaultGateway)
+    {
+        defaultGatewayArray[nodeIndex] = defaultGateway;
     }
 
     public bool IsIPAddressTaken(string ipAddress)
@@ -91,6 +98,11 @@ public class Graph
     public string GetSubnetMask(int nodeIndex)
     {
         return subnetMaskArray[nodeIndex];
+    }
+
+    public string GetDefaultGateway(int nodeIndex)
+    {
+        return defaultGatewayArray[nodeIndex];
     }
 
     public int GetLevel(int nodeNumber)

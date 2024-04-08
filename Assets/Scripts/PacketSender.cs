@@ -1,17 +1,29 @@
+using System.Collections;
 using UnityEngine;
 
 public class PacketSender : MonoBehaviour
 {
-    public void InitiateICMPEchoRequest(NetworkAdapter networkAdapter, string currentIP, string targetIP)
+    public void InitiateICMPEchoRequest(NetworkAdapter networkAdapter, string currentIP, string targetIP, int repeatCount)
     {
         Packet outputPacket = new Packet(8, "Echo request!", currentIP, targetIP, networkAdapter.MACAddress);
-        if (networkAdapter.transform.parent.tag == "Switch")
+
+        StartCoroutine(RepeatICMPEchoRequest(networkAdapter, outputPacket, repeatCount));
+    }
+
+    private IEnumerator RepeatICMPEchoRequest(NetworkAdapter networkAdapter, Packet packet, int repeatCount)
+    {
+        for (int i = 0; i < repeatCount; i++)
         {
-            networkAdapter.SendPacket(outputPacket);
-        }
-        else if (networkAdapter.transform.parent.tag == "Node")
-        {
-            networkAdapter.SendPacket(outputPacket, 0);
+            if (networkAdapter.transform.parent.tag == "Switch" || networkAdapter.transform.parent.tag == "Router")
+            {
+                networkAdapter.SendPacket(packet);
+            }
+            else if (networkAdapter.transform.parent.tag == "Node")
+            {
+                networkAdapter.SendPacket(packet, 0);
+            }
+
+            yield return new WaitForSeconds(1f);
         }
     }
 

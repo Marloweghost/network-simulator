@@ -8,11 +8,14 @@ public class NetworkAdapter : MonoBehaviour
     public string MACAddress;
     public string ipAddressString;
     public string subnetMask = "255.255.255.0";
+    public string defaultGateway = "192.168.0.1";
 
     [SerializeField] private UITextHandler textHandler;
     private Packet debugPacket;
     private PacketHandler packetHandler;
     private PacketSender packetSender;
+    public UINodeInterface uINodeInterface;
+
     [Header("--SendMessage--")]
     [SerializeField] private string TargetIpAddress = "192.168.0.2";
     [Header("--DEBUG--")]
@@ -54,9 +57,19 @@ public class NetworkAdapter : MonoBehaviour
         Debug.Log(subnetMask);
     }
 
+    public void SetDefaultGateway(string _defaultGateway)
+    {
+        defaultGateway = _defaultGateway;
+    }
+
     public void UpdateUI(string IPAddress)
     {
         textHandler.TextUpdateIP(IPAddress);
+    }
+
+    public void SetNodeInterfaceUIInstance(UINodeInterface _uINodeInterface)
+    {
+        uINodeInterface = _uINodeInterface;
     }
 
     private string GenerateRandomMAC()
