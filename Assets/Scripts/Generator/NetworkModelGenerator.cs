@@ -1,3 +1,4 @@
+using com.cyborgAssets.inspectorButtonPro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,9 @@ public class NetworkModelGenerator : MonoBehaviour
 
     private int[,] levelNodesCountBounds;
 
-    private void Start()
+
+    [ProButton]
+    public void Activate()
     {
         levelNodesCountBounds = new int[4, 2];
         for (int i = 0; i < levelNodesCountLowerBounds.Length; i++)
@@ -46,7 +49,7 @@ public class NetworkModelGenerator : MonoBehaviour
 
         random = new System.Random();
 
-        
+
         nodeCount = random.Next(Mathf.RoundToInt(2 + skillLevel * Mathf.Lerp(1f, 2f, complexity)), Mathf.RoundToInt(6 + skillLevel * Mathf.Lerp(2f, 3f, complexity)));
         Debug.Log("ќбщее кол-во нод: " + nodeCount);
 

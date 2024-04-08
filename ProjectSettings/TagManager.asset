@@ -8,6 +8,7 @@ TagManager:
   - Switch
   - Wire
   - Router
+  - Generator
   layers:
   - Default
   - TransparentFX
