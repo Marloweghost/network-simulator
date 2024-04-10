@@ -64,7 +64,7 @@ public class NetworkAdapter : MonoBehaviour
 
     public void UpdateUI(string IPAddress)
     {
-        textHandler.TextUpdateIP(IPAddress);
+        textHandler.TextUpdateIP(IPAddress, transform.parent.name);
     }
 
     public void SetNodeInterfaceUIInstance(UINodeInterface _uINodeInterface)
@@ -95,7 +95,7 @@ public class NetworkAdapter : MonoBehaviour
     [ProButton]
     private void ARMSendDebugPacket()
     {
-        debugPacket = new Packet(-1, "This is a debug message", ipAddress, TargetIpAddress, MACAddress);
+        debugPacket = new Packet(-1, "This is a debug message", ipAddress, TargetIpAddress, MACAddress, transform.parent.name);
         SendPacket(debugPacket, 0);
     }
 
@@ -108,7 +108,7 @@ public class NetworkAdapter : MonoBehaviour
     [ProButton]
     private void ARMSendDebugEchoRequest()
     {
-        debugPacket = new Packet(8, "This is a debug echo request!", ipAddress, TargetIpAddress, MACAddress);
+        debugPacket = new Packet(8, "This is a debug echo request!", ipAddress, TargetIpAddress, MACAddress, transform.parent.name);
         SendPacket(debugPacket, 0);
     }
 

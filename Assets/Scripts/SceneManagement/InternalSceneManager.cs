@@ -20,7 +20,6 @@ public class InternalSceneManager : MonoBehaviour
         }
     }
 
-    [SerializeField] private GameObject MainCanvas;
     private float generatorComplexity;
     private int generatorDifficulty;
 
@@ -41,11 +40,6 @@ public class InternalSceneManager : MonoBehaviour
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= ChangeGeneratorProperties;
-    }
-
-    private void Start()
-    {
-        MainCanvas.GetComponent<MainMenuUIManager>().Activate();
     }
 
     public void SwitchScene(string newSceneName)

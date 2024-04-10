@@ -11,11 +11,11 @@ public class PlayerCamera : MonoBehaviour
 
     private float xRotation;
     private float yRotation;
-    
-    void Start()
+
+    private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
     }
 
     private void Update()
