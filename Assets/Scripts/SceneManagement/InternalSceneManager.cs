@@ -34,12 +34,12 @@ public class InternalSceneManager : MonoBehaviour
         instance = this;
         DontDestroyOnLoad(gameObject);
 
-        SceneManager.sceneLoaded += ChangeGeneratorProperties;
+        SceneManager.sceneLoaded += ActivateGenerator;
     }
 
     private void OnDestroy()
     {
-        SceneManager.sceneLoaded -= ChangeGeneratorProperties;
+        SceneManager.sceneLoaded -= ActivateGenerator;
     }
 
     public void SwitchScene(string newSceneName)
@@ -68,7 +68,7 @@ public class InternalSceneManager : MonoBehaviour
         }
     }
 
-    private void ChangeGeneratorProperties(Scene scene, LoadSceneMode mode)
+    private void ActivateGenerator(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "Level_Generated")
         {

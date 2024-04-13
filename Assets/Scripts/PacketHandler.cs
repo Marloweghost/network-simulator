@@ -90,7 +90,7 @@ public class PacketHandler : MonoBehaviour
                     string log = $"Reply from {_packetData.SenderIP}: bytes=- time=-ms TTL={_packetData.TTL}";
                     Debug.Log(log);
                     networkAdapterRef.uINodeInterface.AddConsoleText(log);
-                    TaskManager.onActionCompleted.Invoke(new ActionInfoPing(transform.parent.name, _packetData.SenderName));
+                    TaskManager.onActionCompleted.Invoke(new ActionInfoPing(transform.parent.name, _packetData.SenderName, _currentIpAddress, _packetData.SenderIP));
                     break;
 
                 // ARP Request

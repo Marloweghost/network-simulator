@@ -9,6 +9,7 @@ public class Graph
     private string[] addressArray;
     private string[] subnetMaskArray;
     private string[] defaultGatewayArray;
+    private string[] nameArray;
     public int vertexCount { get; private set; }
 
     public Graph(int vertices)
@@ -18,6 +19,7 @@ public class Graph
         addressArray = new string[vertexCount];
         subnetMaskArray = new string[vertexCount];
         defaultGatewayArray = new string[vertexCount];
+        nameArray = new string[vertexCount];
     }
 
     public void AddEdge(int i, int j)
@@ -45,6 +47,11 @@ public class Graph
     public void AddDefaultGateway(int nodeIndex, string defaultGateway)
     {
         defaultGatewayArray[nodeIndex] = defaultGateway;
+    }
+
+    public void AddName(int nodeIndex, string name)
+    {
+        nameArray[nodeIndex] = name;
     }
 
     public bool IsIPAddressTaken(string ipAddress)
@@ -103,6 +110,11 @@ public class Graph
     public string GetDefaultGateway(int nodeIndex)
     {
         return defaultGatewayArray[nodeIndex];
+    }
+
+    public string GetName(int nodeIndex)
+    {
+        return nameArray[nodeIndex];
     }
 
     public int GetLevel(int nodeNumber)
