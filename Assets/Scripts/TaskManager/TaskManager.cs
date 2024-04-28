@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class TaskManager : MonoBehaviour
@@ -23,12 +22,10 @@ public class TaskManager : MonoBehaviour
     private string subnetToConnectTo;
     private string ipToConnectTo;
 
-
     private void Awake()
     {
         onActionCompleted.AddListener(OnActionCompleted);
     }
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.O))
@@ -36,7 +33,6 @@ public class TaskManager : MonoBehaviour
             UI.ActivateNotificationStartPanel(taskDictionary.GetValueOrDefault(levelName).NotificationStartText);
         }
     }
-
     private void Start()
     {
         Scene currentScene = SceneManager.GetActiveScene();
@@ -51,7 +47,6 @@ public class TaskManager : MonoBehaviour
 
         UI.ActivateNotificationStartPanel(taskDictionary.GetValueOrDefault(levelName).NotificationStartText);
     }
-
     private void InitializeTasks()
     {
         taskDictionary.Add("Level_1", new TaskInfo("// Необходимо выполнить Ping от PC1 до PC0\r\n//-// Достаточно ввести адрес целевого компьютера в соответствующее поле и нажать кнопку Ping!\r\n\r\n[F] - открыть свойства компьютера\r\n[O] - открыть задание",
@@ -74,13 +69,11 @@ public class TaskManager : MonoBehaviour
 
         taskDictionary.Add("Level_Generated", new TaskInfo(notificationStartGeneratedTaskText, notificationSuccessGeneratedTaskText));
     }
-
     private void RandomizeGeneratedTask(int _taskCount)
     {
         // taskType = randomGenerator.Next(0, taskCount);
         taskType = 0;
     }
-
     private void SetupGeneratedTask(int taskType)
     {
         NetworkModelGenerator networkModelGenerator = generatorInstance.GetComponent<NetworkModelGenerator>();
@@ -105,17 +98,14 @@ public class TaskManager : MonoBehaviour
                 break;
         }
     }
-
     private void OnDisable()
     {
         onActionCompleted.RemoveListener(OnActionCompleted);
     }
-
     public void Activate(Scene scene)
     {
         levelName = scene.name;
     }
-
     private void OnActionCompleted(ActionInfo actionInfo)
     {
         switch (levelName)
@@ -138,14 +128,12 @@ public class TaskManager : MonoBehaviour
                 break;
         }
     }
-
     private IEnumerator OnTaskCompleted()
     {
         yield return new WaitForSeconds(1f);
         nodeInteractionCanvas.GetComponentInChildren<UINodeInterface>().Deactivate();
         UI.ActivateNotificationSuccessPanel(taskDictionary.GetValueOrDefault(levelName).NotificationSuccessText);
     }
-
     private void HandleGeneratedTask(ActionInfo actionInfo)
     {
         switch (taskType)
@@ -168,7 +156,6 @@ public class TaskManager : MonoBehaviour
                 break;
         }
     }
-
     private bool IsIpInSubnet(string ip, string subnet, string mask)
     {
         // Разбиваем IP-адрес, подсеть и маску на октеты
@@ -231,12 +218,10 @@ public struct TaskInfo
         _notificationSuccessText = notificationSuccessText;
     }
 }
-
 public abstract class ActionInfo
 {
     
 }
-
 public class ActionInfoPing : ActionInfo
 {
     public string ReplyReceiverName;
@@ -252,6 +237,5 @@ public class ActionInfoPing : ActionInfo
         ReplySenderIP = replySenderIP;
     }
 }
-
 [System.Serializable]
 public class ActionCompletedEvent : UnityEvent<ActionInfo> { }

@@ -35,7 +35,6 @@ public class NetworkModelGenerator : MonoBehaviour
     private Graph graph;
 
 
-
     [ProButton]
     public void Activate()
     {
@@ -225,7 +224,6 @@ public class NetworkModelGenerator : MonoBehaviour
 
             GameObject spawnedNode = null;
 
-            // Если уровня два, то маршрутизатор НЕ НУЖЕН
             if (nodeLevel == levelsCount - 1)
             {
                 spawnedNode = Instantiate(nodePrefab, new Vector3(startPosition.x + levelPositionDelta.x * nodeLevel + nodePositionDelta.x * nodeIndex * Mathf.Pow(-1f, nodeIndex),
@@ -414,7 +412,6 @@ public class NetworkModelGenerator : MonoBehaviour
 
         return networkAddress;
     }
-
 
     public GameObject InstantiateSingleNode()
     {

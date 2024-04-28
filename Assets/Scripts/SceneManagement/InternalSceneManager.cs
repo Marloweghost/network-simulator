@@ -1,6 +1,5 @@
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using System.Linq;
 
 public class InternalSceneManager : MonoBehaviour
 {
